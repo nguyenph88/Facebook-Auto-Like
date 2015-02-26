@@ -5,7 +5,7 @@ Using App Token to exploit the user info and take advantage of it to make an aut
 
 *** Index.php:
 - Automate the process of liking using facebook graph api
-- Want to see them in real action? Visit my 2 facebook like -related projects at: www.realfreelikes.com and www.drautogon.com
+- Want to see them in real action? *** I have comercialzed and sold those 2 projects so please refer to my resume.
 
 ***  Auto.php:
 - Still do the same thing but instead of using the graph api file, the script call the api directly.
